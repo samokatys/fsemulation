@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <iostream>
-#include <map>
 #include "algstring.h"
 
 
@@ -38,14 +37,14 @@ std::vector<std::pair<std::string, int> > cmdVec =
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	std::string userInput;
+	std::string input;
 	std::vector<std::string> tokens;
 	while (true) {
 		std::cout << "Input command: ";
-		std::getline(std::cin, userInput);
+		std::getline(std::cin, input);
 
-		if (userInput.empty() == false) {
-			split(userInput, ' ', tokens);
+		if (input.empty() == false) {
+			split(input, ' ', tokens);
 
 			auto it = std::find_if(cmdVec.begin(), cmdVec.end(),
 								   [&tokens] (const std::pair<std::string, int> &p)
@@ -53,9 +52,10 @@ int _tmain(int argc, _TCHAR* argv[])
 			if (it != cmdVec.end()) {
 				if( it->second == 0) { break; }
 
+
 				std::cout << "Command ID: " << it->second << std::endl;
-				for (size_t i = 0; i < tokens.size(); ++i) {
-					std::cout << tokens[i] << std::endl;
+				for (const std::string &s : tokens) {
+					std::cout << s << std::endl;
 				}
 			}
 			else {
