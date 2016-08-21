@@ -19,12 +19,18 @@
     <ClCompile Include="commands.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="fscore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="algstring.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="commands.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fscore.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
