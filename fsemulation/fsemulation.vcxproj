@@ -84,10 +84,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="algstring.cpp" />
+    <ClCompile Include="commands.cpp" />
     <ClCompile Include="fsemulation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="algstring.h" />
+    <ClInclude Include="commands.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
