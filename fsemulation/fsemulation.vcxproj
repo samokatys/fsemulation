@@ -86,12 +86,14 @@
     <ClCompile Include="algstring.cpp" />
     <ClCompile Include="commands.cpp" />
     <ClCompile Include="fscore.cpp" />
-    <ClCompile Include="fsemulation.cpp" />
+    <ClCompile Include="fsemulator.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="algstring.h" />
     <ClInclude Include="commands.h" />
     <ClInclude Include="fscore.h" />
+    <ClInclude Include="fsemulator.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

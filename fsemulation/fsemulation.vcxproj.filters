@@ -10,9 +10,6 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="fsemulation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="algstring.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -20,6 +17,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="fscore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fsemulator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -31,6 +34,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="fscore.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fsemulator.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
