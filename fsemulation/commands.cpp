@@ -117,11 +117,34 @@ ErrorCodes removeDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args
 	}
 
 	ResultStatus status = emul.RemoveNode(node);
-	if (status == RS_Argument) {
+	if (status == RS_NotEmpty) {
+		return EC_DirNotEmpty;
+	}
+	else if (status != RS_NoError) {
 		return EC_Argument;
 	}
-	else if (status == RS_NotEmpty) {
+
+	return EC_NoError;
+}
+
+ErrorCodes removeNode(FSEmulator &emul, FSNode *node)
+{
+	ErrorCodes code = EC_NoError;
+	const TFSNodes &nodes = node->Childs();
+	// плохо сделано, но тогда нужно переделывать на именах файлов
+	while (nodes.empty() == false) {
+		code = removeNode(emul, *nodes.begin());
+		if (code != EC_NoError) {
+			return code;
+		}
+	}
+
+	ResultStatus status = emul.RemoveNode(node);
+	if (status == RS_NotEmpty) {
 		return EC_DirNotEmpty;
+	}
+	else if (status != RS_NoError) {
+		return EC_Argument;
 	}
 
 	return EC_NoError;
@@ -133,7 +156,26 @@ ErrorCodes deleteTree(FSEmulator &emul, FSNode **currentDir, const TArgsVec &arg
 		return EC_SyntaxCmd;
 	}
 
-	return EC_NoError;
+	TArgsVec splitDir;
+	split(args[1], NODES_DELIMITER, splitDir);
+
+	FSNode *node = getParentNode(emul, *currentDir, splitDir);
+	if (node == nullptr) {
+		return EC_PathNotExist;
+	}
+	if (splitDir.empty()) {
+		return EC_RemoveRoot;
+	}
+
+	node = GetChild(node, splitDir[0]);
+	if (node == nullptr) {
+		return EC_PathNotExist;
+	}
+	if (node == *currentDir) {
+		return EC_RemoveCurrentDir;
+	}
+
+	return removeNode(emul, node);
 }
 
 ErrorCodes makeFile(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args)
