@@ -9,6 +9,7 @@ enum ResultStatus
 	RS_Argument,
 	RS_Exist,
 	RS_NotExist,
+	RS_NotEmpty
 };
 
 class FSEmulator
@@ -20,8 +21,8 @@ public:
 	ResultStatus CreateRoot(FSNode **root, const std::string &name);
 	ResultStatus RemoveRoot(FSNode *root);
 
-	ResultStatus CreateDir(FSNode **dir, const std::string &name, FSNode *node);
-	ResultStatus CreateFile(FSNode **file, const std::string &name, FSNode *node);
+	ResultStatus CreateDir(FSNode **dir, const std::string &name, FSNode *parent);
+	ResultStatus CreateFile(FSNode **file, const std::string &name, FSNode *parent);
 	ResultStatus CreateHardLink(FSLink **link, FSNode *src, FSNode *dst);
 	ResultStatus CreateDynamicLink(FSLink **link, FSNode *src, FSNode *dst);
 
@@ -30,9 +31,10 @@ public:
 	ResultStatus RemoveNode(FSNode *node);
 
 private:
-	ResultStatus CreateNode(FSNode **newNode, NodeType type, const std::string &name, FSNode *node);
+	template <typename T>
+	ResultStatus CreateNode(T **newNode, NodeType type, const std::string &name, FSNode *parent);
 
 private:
-	TFSNodeVec m_roots;
+	TFSNodes m_roots;
 };
 

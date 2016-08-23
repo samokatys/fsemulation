@@ -14,6 +14,11 @@ FSNode::~FSNode()
 	}
 }
 
+NodeType FSNode::Type() const
+{
+	return m_type;
+}
+
 FSNode *FSNode::Parent()
 {
 	return m_parent;
@@ -29,7 +34,7 @@ const std::string& FSNode::Name() const
 	return m_name;
 }
 
-const TFSNodeVec& FSNode::Childs() const
+const TFSNodes& FSNode::Childs() const
 {
 	return m_childs;
 }
@@ -92,4 +97,28 @@ std::string Path(const FSNode *node)
 	}
 
 	return path;
+}
+
+bool IsParent(const FSNode *parent, const FSNode *child)
+{
+	const FSNode *pnode = nullptr;
+	do
+	{
+		pnode = child->Parent();
+	} while (pnode || pnode != parent);
+
+	return pnode == parent;
+}
+
+const FSNode *GetChild(const FSNode *parent, const std::string &name)
+{
+	const FSNode *child = nullptr;
+	for (const FSNode *node : parent->Childs()) {
+		if (node->Name() == name) {
+			child = node;
+			break;
+		}
+	}
+
+	return child;
 }
