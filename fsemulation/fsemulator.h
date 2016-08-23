@@ -41,6 +41,10 @@ private:
 	template <typename T>
 	ResultStatus CreateNode(T **newNode, NodeType type, const std::string &name, FSNode *parent);
 
+	bool CheckNameSymbols(const std::string &name);
+	bool CheckFileName(const std::string &name);
+	bool CheckDirName(const std::string &name);
+
 private:
 	TFSNodes m_roots;
 	TLinkTable m_linkTable;

@@ -1,6 +1,9 @@
 #include "fsemulator.h"
 
+#include <vector>
 #include <algorithm>
+
+#include "algstring.h"
 
 FSEmulator::FSEmulator()
 {
@@ -58,9 +61,22 @@ ResultStatus FSEmulator::RemoveRoot(FSNode *root)
 template <typename T>
 ResultStatus FSEmulator::CreateNode(T **newNode, NodeType type, const std::string &name, FSNode *parent)
 {
-	if (name.empty()) {
-		return RS_Argument;
+	if (type == NT_Directory) {
+		if (CheckDirName(name) == false) {
+			return RS_Argument;
+		}
 	}
+	else if (type == NT_File) {
+		if (CheckFileName(name) == false) {
+			return RS_Argument;
+		}
+	}
+	else {
+		if (CheckDirName(name) == false) {
+			return RS_Argument;
+		}
+	}
+
 	if (parent == nullptr) {
 		return RS_Argument;
 	}
@@ -150,6 +166,40 @@ ResultStatus FSEmulator::CreateDynamicLink(FSLink **link, FSNode *src, FSNode *d
 
 ResultStatus FSEmulator::CopyNode(FSNode *src, FSNode *dst)
 {
+	if (src == nullptr) {
+		return RS_Argument;
+	}
+	if (dst == nullptr) {
+		return RS_Argument;
+	}
+	if (dst->Type() != NT_Directory) {
+		return RS_Argument;
+	}
+
+	if (src->Type() == NT_Directory) {
+		FSNode *node;
+		ResultStatus status = CreateNode(&node, src->Type(), src->Name(), dst);
+		if (status == RS_NoError) {
+			for (FSNode *child : src->m_childs) {
+				status = CopyNode(child, node);
+				if (status != RS_NoError) { break; }
+			}
+		}
+		return status;
+	}
+	else if (src->Type() == NT_File) {
+		FSNode *node;
+		return CreateNode(&node, src->Type(), src->Name(), dst);
+	}
+	else if (src->Type() == NT_HardLink) {
+		FSLink *link;
+		return CreateHardLink(&link, (( FSLink * ) src)->Source(), dst);
+	}
+	else if (src->Type() == NT_DynamicLink) {
+		FSLink *link;
+		return CreateHardLink(&link, (( FSLink * ) src)->Source(), dst);
+	}
+
 	return RS_NoError;
 }
 
@@ -195,4 +245,57 @@ ResultStatus FSEmulator::RemoveNode(FSNode *node)
 	delete node;
 
 	return RS_NoError;
+}
+
+bool FSEmulator::CheckNameSymbols(const std::string &name)
+{
+	for (size_t i = 0; i < name.size(); ++i) {
+		if (isalnum(name[i]) == 0) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool FSEmulator::CheckFileName(const std::string &name)
+{
+	if (name.empty()) {
+		return false;
+	}
+
+	std::vector<std::string> tokens;
+	split(name, '.', tokens);
+
+	if (tokens.size() > 2) {
+		return false;
+	}
+	if (tokens[0].size() > 8) {
+		return false;
+	}
+	if (tokens.size() == 1 && tokens[1].size() > 3) {
+		return false;
+	}
+
+	return CheckNameSymbols(tokens[0]) &&
+		CheckNameSymbols(tokens[1]);
+}
+
+bool FSEmulator::CheckDirName(const std::string &name)
+{
+	if (name.empty()) {
+		return false;
+	}
+
+	std::vector<std::string> tokens;
+	split(name, '.', tokens);
+
+	if (tokens.size() > 1) {
+		return false;
+	}
+	if (tokens[0].size() > 8) {
+		return false;
+	}
+
+	return CheckNameSymbols(tokens[0]);
 }

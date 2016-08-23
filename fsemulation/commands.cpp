@@ -333,6 +333,27 @@ ErrorCodes copy(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args)
 		return EC_SyntaxCmd;
 	}
 
+	TArgsVec sourcePath;
+	split(args[1], NODES_DELIMITER, sourcePath);
+
+	FSNode *sourceNode = getNode(emul, *currentDir, sourcePath);
+	if (sourceNode == nullptr) {
+		return EC_PathNotExist;
+	}
+
+	TArgsVec destPath;
+	split(args[2], NODES_DELIMITER, destPath);
+
+	FSNode *destNode = getNode(emul, *currentDir, destPath);
+	if (destNode == nullptr) {
+		return EC_PathNotExist;
+	}
+
+	ResultStatus status = emul.CopyNode(sourceNode, destNode);
+	if (status != RS_NoError) {
+		return EC_Argument;
+	}
+
 	return EC_NoError;
 }
 
