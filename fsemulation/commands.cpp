@@ -115,6 +115,9 @@ ErrorCodes removeDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args
 	if (node == *currentDir) {
 		return EC_RemoveCurrentDir;
 	}
+	if (node->Type() != NT_Directory) {
+		return EC_NotDirectory;
+	}
 
 	ResultStatus status = emul.RemoveNode(node);
 	if (status == RS_NotEmpty) {
@@ -232,6 +235,33 @@ ErrorCodes deleteFile(FSEmulator &emul, FSNode **currentDir, const TArgsVec &arg
 {
 	if (args.size() != 2) {
 		return EC_SyntaxCmd;
+	}
+
+	TArgsVec splitDir;
+	split(args[1], NODES_DELIMITER, splitDir);
+
+	FSNode *node = getParentNode(emul, *currentDir, splitDir);
+	if (node == nullptr) {
+		return EC_PathNotExist;
+	}
+	if (splitDir.empty()) {
+		return EC_RemoveRoot;
+	}
+
+	node = GetChild(node, splitDir[0]);
+	if (node == nullptr) {
+		return EC_PathNotExist;
+	}
+	if (node->Type() != NT_File) {
+		return EC_NotFile;
+	}
+
+	ResultStatus status = emul.RemoveNode(node);
+	if (status == RS_NotEmpty) {
+		return EC_DirNotEmpty;
+	}
+	else if (status != RS_NoError) {
+		return EC_Argument;
 	}
 
 	return EC_NoError;

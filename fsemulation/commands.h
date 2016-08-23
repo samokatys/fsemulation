@@ -16,6 +16,9 @@ enum ErrorCodes {
 	EC_DirNotEmpty,
 	EC_PathNotExist,
 
+	EC_NotFile,
+	EC_NotDirectory,
+
 	EC_FileExist,
 	EC_DirectoryExist,
 };
