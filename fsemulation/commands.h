@@ -18,6 +18,7 @@ enum ErrorCodes {
 
 	EC_NotFile,
 	EC_NotDirectory,
+	EC_HasHardLink,
 
 	EC_FileExist,
 	EC_DirectoryExist,

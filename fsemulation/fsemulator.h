@@ -1,6 +1,7 @@
 #pragma once
 
 #include "fscore.h"
+#include <map>
 
 enum ResultStatus
 {
@@ -9,8 +10,12 @@ enum ResultStatus
 	RS_Argument,
 	RS_Exist,
 	RS_NotExist,
-	RS_NotEmpty
+	RS_NotEmpty,
+
+	RS_HasHLink
 };
+
+typedef std::map<FSNode *, std::vector<FSLink *> > TLinkTable;
 
 class FSEmulator
 {
@@ -38,5 +43,6 @@ private:
 
 private:
 	TFSNodes m_roots;
+	TLinkTable m_linkTable;
 };
 

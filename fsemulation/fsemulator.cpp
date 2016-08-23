@@ -111,6 +111,12 @@ ResultStatus FSEmulator::CreateHardLink(FSLink **link, FSNode *src, FSNode *dst)
 	*link = new FSLink(NT_HardLink, "hard", dst, src);
 	dst->m_childs.insert(*link);
 
+	auto it = m_linkTable.find(src);
+	if (it == m_linkTable.end()) {
+		m_linkTable.insert(std::make_pair(src, std::vector<FSLink *>()));
+	}
+	m_linkTable[src].push_back(*link);
+
 	return RS_NoError;
 }
 
@@ -132,6 +138,12 @@ ResultStatus FSEmulator::CreateDynamicLink(FSLink **link, FSNode *src, FSNode *d
 
 	*link = new FSLink(NT_DynamicLink, "dynamic", dst, src);
 	dst->m_childs.insert(*link);
+
+	auto it = m_linkTable.find(src);
+	if (it == m_linkTable.end()) {
+		m_linkTable.insert(std::make_pair(src, std::vector<FSLink *>()));
+	}
+	m_linkTable[src].push_back(*link);
 
 	return RS_NoError;
 }
@@ -158,7 +170,23 @@ ResultStatus FSEmulator::RemoveNode(FSNode *node)
 		return RS_NotEmpty;
 	}
 
-	// TODO: links check
+	auto it = m_linkTable.find(node);
+	if (it != m_linkTable.end()) {
+		auto &links = m_linkTable[node];
+		if (std::any_of(links.begin(), links.end(),
+			[] (const FSLink *l) { return l->Type() == NT_HardLink; })) {
+			return RS_HasHLink;
+		}
+		// only dynamic links
+		else {
+			ResultStatus status = RS_NoError;
+			while (links.empty() == false) {
+				RemoveNode(*links.begin());
+				links.erase(links.begin());
+			}
+		}
+	}
+
 	size_t num = node->m_parent->m_childs.erase(node);
 	if (num == 0) {
 		return RS_NotExist;

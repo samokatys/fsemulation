@@ -33,6 +33,32 @@ FSNode *getParentNode(FSEmulator &emul, FSNode *currentDir, TArgsVec &path)
 	return node;
 }
 
+FSNode *getNode(FSEmulator &emul, FSNode *currentDir, TArgsVec &path)
+{
+	FSNode *parent;
+	if (emul.IsRoot(&parent, path[0]) == false) {
+		parent = currentDir;
+	}
+	else {
+		path.erase(path.begin());
+	}
+
+	FSNode *node = parent;
+	if (path.empty() == false) {
+		for (size_t nodeNum = 0; nodeNum < path.size(); ++nodeNum) {
+			node = GetChild(parent, path[nodeNum]);
+			if (node == nullptr) { break; }
+			parent = node;
+		}
+
+		if (path.size() > 1) {
+			path.erase(path.begin(), path.begin() + path.size() - 1);
+		}
+	}
+
+	return node;
+}
+
 ErrorCodes makeDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args)
 {
 	if (args.size() != 2) {
@@ -74,16 +100,9 @@ ErrorCodes changeDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args
 	TArgsVec splitDir;
 	split(args[1], NODES_DELIMITER, splitDir);
 
-	FSNode *node = getParentNode(emul, *currentDir, splitDir);
+	FSNode *node = getNode(emul, *currentDir, splitDir);
 	if (node == nullptr) {
 		return EC_PathNotExist;
-	}
-
-	if (splitDir.empty() == false) {
-		node = GetChild(node, splitDir[0]);
-		if (node == nullptr) {
-			return EC_PathNotExist;
-		}
 	}
 
 	*currentDir = node;
@@ -100,17 +119,12 @@ ErrorCodes removeDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args
 	TArgsVec splitDir;
 	split(args[1], NODES_DELIMITER, splitDir);
 
-	FSNode *node = getParentNode(emul, *currentDir, splitDir);
+	FSNode *node = getNode(emul, *currentDir, splitDir);
 	if (node == nullptr) {
 		return EC_PathNotExist;
 	}
-	if (splitDir.empty()) {
+	if (node->Parent() == nullptr) {
 		return EC_RemoveRoot;
-	}
-
-	node = GetChild(node, splitDir[0]);
-	if (node == nullptr) {
-		return EC_PathNotExist;
 	}
 	if (node == *currentDir) {
 		return EC_RemoveCurrentDir;
@@ -122,6 +136,9 @@ ErrorCodes removeDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args
 	ResultStatus status = emul.RemoveNode(node);
 	if (status == RS_NotEmpty) {
 		return EC_DirNotEmpty;
+	}
+	else if (status == RS_HasHLink) {
+		return EC_HasHardLink;
 	}
 	else if (status != RS_NoError) {
 		return EC_Argument;
@@ -146,6 +163,9 @@ ErrorCodes removeNode(FSEmulator &emul, FSNode *node)
 	if (status == RS_NotEmpty) {
 		return EC_DirNotEmpty;
 	}
+	else if (status == RS_HasHLink) {
+		return EC_HasHardLink;
+	}
 	else if (status != RS_NoError) {
 		return EC_Argument;
 	}
@@ -162,17 +182,12 @@ ErrorCodes deleteTree(FSEmulator &emul, FSNode **currentDir, const TArgsVec &arg
 	TArgsVec splitDir;
 	split(args[1], NODES_DELIMITER, splitDir);
 
-	FSNode *node = getParentNode(emul, *currentDir, splitDir);
+	FSNode *node = getNode(emul, *currentDir, splitDir);
 	if (node == nullptr) {
 		return EC_PathNotExist;
 	}
-	if (splitDir.empty()) {
+	if (node->Parent() == nullptr) {
 		return EC_RemoveRoot;
-	}
-
-	node = GetChild(node, splitDir[0]);
-	if (node == nullptr) {
-		return EC_PathNotExist;
 	}
 	if (node == *currentDir) {
 		return EC_RemoveCurrentDir;
@@ -219,6 +234,28 @@ ErrorCodes makeHardLink(FSEmulator &emul, FSNode **currentDir, const TArgsVec &a
 		return EC_SyntaxCmd;
 	}
 
+	TArgsVec sourcePath;
+	split(args[1], NODES_DELIMITER, sourcePath);
+
+	FSNode *sourceNode = getNode(emul, *currentDir, sourcePath);
+	if (sourceNode == nullptr) {
+		return EC_PathNotExist;
+	}
+
+	TArgsVec destPath;
+	split(args[2], NODES_DELIMITER, destPath);
+
+	FSNode *destNode = getNode(emul, *currentDir, destPath);
+	if (destNode == nullptr) {
+		return EC_PathNotExist;
+	}
+
+	FSLink *link = nullptr;
+	ResultStatus status = emul.CreateHardLink(&link, sourceNode, destNode);
+	if (status != RS_NoError) {
+		return EC_Argument;
+	}
+
 	return EC_NoError;
 }
 
@@ -226,6 +263,28 @@ ErrorCodes makeDynamicLink(FSEmulator &emul, FSNode **currentDir, const TArgsVec
 {
 	if (args.size() != 3) {
 		return EC_SyntaxCmd;
+	}
+
+	TArgsVec sourcePath;
+	split(args[1], NODES_DELIMITER, sourcePath);
+
+	FSNode *sourceNode = getNode(emul, *currentDir, sourcePath);
+	if (sourceNode == nullptr) {
+		return EC_PathNotExist;
+	}
+
+	TArgsVec destPath;
+	split(args[2], NODES_DELIMITER, destPath);
+
+	FSNode *destNode = getNode(emul, *currentDir, destPath);
+	if (destNode == nullptr) {
+		return EC_PathNotExist;
+	}
+
+	FSLink *link = nullptr;
+	ResultStatus status = emul.CreateDynamicLink(&link, sourceNode, destNode);
+	if (status != RS_NoError) {
+		return EC_Argument;
 	}
 
 	return EC_NoError;
@@ -240,17 +299,15 @@ ErrorCodes deleteFile(FSEmulator &emul, FSNode **currentDir, const TArgsVec &arg
 	TArgsVec splitDir;
 	split(args[1], NODES_DELIMITER, splitDir);
 
-	FSNode *node = getParentNode(emul, *currentDir, splitDir);
+	FSNode *node = getNode(emul, *currentDir, splitDir);
 	if (node == nullptr) {
 		return EC_PathNotExist;
 	}
-	if (splitDir.empty()) {
+	if (node->Parent() == nullptr) {
 		return EC_RemoveRoot;
 	}
-
-	node = GetChild(node, splitDir[0]);
-	if (node == nullptr) {
-		return EC_PathNotExist;
+	if (node == *currentDir) {
+		return EC_RemoveCurrentDir;
 	}
 	if (node->Type() != NT_File) {
 		return EC_NotFile;
@@ -259,6 +316,9 @@ ErrorCodes deleteFile(FSEmulator &emul, FSNode **currentDir, const TArgsVec &arg
 	ResultStatus status = emul.RemoveNode(node);
 	if (status == RS_NotEmpty) {
 		return EC_DirNotEmpty;
+	}
+	else if (status == RS_HasHLink) {
+		return EC_HasHardLink;
 	}
 	else if (status != RS_NoError) {
 		return EC_Argument;
