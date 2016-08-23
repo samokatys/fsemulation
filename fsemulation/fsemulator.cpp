@@ -205,6 +205,43 @@ ResultStatus FSEmulator::CopyNode(FSNode *src, FSNode *dst)
 
 ResultStatus FSEmulator::MoveNode(FSNode *src, FSNode *dst)
 {
+	if (src == nullptr) {
+		return RS_Argument;
+	}
+	if (dst == nullptr) {
+		return RS_Argument;
+	}
+	if (dst->Type() != NT_Directory) {
+		return RS_Argument;
+	}
+
+	if (src->m_type == NT_Directory) {
+		for (auto it = m_linkTable.begin(); it != m_linkTable.end(); ++it) {
+			// если один из потомков или сам корень имеет hardlink
+			if (IsParent(src, it->first) || src == it->first) {
+				auto &links = it->second;
+				if (std::any_of(links.begin(), links.end(),
+					[] (const FSLink *l) { return l->Type() == NT_HardLink; })) {
+					return RS_HasHLink;
+				}
+			}
+		}
+	}
+	else if (src->m_type == NT_File) {
+		auto it = m_linkTable.find(src);
+		if (it != m_linkTable.end()) {
+			auto &links = m_linkTable[src];
+			if (std::any_of(links.begin(), links.end(),
+				[] (const FSLink *l) { return l->Type() == NT_HardLink; })) {
+				return RS_HasHLink;
+			}
+		}
+	}
+
+	src->m_parent->m_childs.erase(src);
+	src->m_parent = dst;
+	dst->m_childs.insert(src);
+
 	return RS_NoError;
 }
 

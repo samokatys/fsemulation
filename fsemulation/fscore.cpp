@@ -101,11 +101,10 @@ std::string Path(const FSNode *node)
 
 bool IsParent(const FSNode *parent, const FSNode *child)
 {
-	const FSNode *pnode = nullptr;
-	do
-	{
-		pnode = child->Parent();
-	} while (pnode || pnode != parent);
+	const FSNode *pnode = child->Parent();
+	while (pnode && pnode != parent) {
+		pnode = pnode->Parent();
+	}
 
 	return pnode == parent;
 }

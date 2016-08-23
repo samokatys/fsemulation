@@ -90,6 +90,17 @@ void printError(ErrorCodes err)
 
 	switch (err) {
 		case EC_SyntaxCmd: std::cout << "Command syntax"; break;
+		case EC_Argument:std::cout << "Incorrect argument"; break;
+		case EC_CurrentDirEmpty:std::cout << "Current dir is empty"; break;
+		case EC_RemoveCurrentDir:std::cout << "Cannot remove current dir"; break;
+		case EC_RemoveRoot:std::cout << "Cannot remove root dir"; break;
+		case EC_DirNotEmpty:std::cout << "Dir not empty"; break;
+		case EC_PathNotExist:std::cout << "Path not exist"; break;
+		case EC_NotFile:std::cout << "Not file"; break;
+		case EC_NotDirectory:std::cout << "Not directory"; break;
+		case EC_HasHardLink:std::cout << "Has hard link"; break;
+		case EC_FileExist:std::cout << "File already exist"; break;
+		case EC_DirectoryExist:std::cout << "Directory already exist"; break;
 		default: std::cout << "0x" << std::hex << err; break;
 	}
 

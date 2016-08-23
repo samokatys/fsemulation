@@ -126,6 +126,9 @@ ErrorCodes removeDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args
 	if (node->Parent() == nullptr) {
 		return EC_RemoveRoot;
 	}
+	if (IsParent(node, *currentDir)) {
+		return EC_RemoveCurrentDir;
+	}
 	if (node == *currentDir) {
 		return EC_RemoveCurrentDir;
 	}
@@ -188,6 +191,9 @@ ErrorCodes deleteTree(FSEmulator &emul, FSNode **currentDir, const TArgsVec &arg
 	}
 	if (node->Parent() == nullptr) {
 		return EC_RemoveRoot;
+	}
+	if (IsParent(node, *currentDir)) {
+		return EC_RemoveCurrentDir;
 	}
 	if (node == *currentDir) {
 		return EC_RemoveCurrentDir;
@@ -361,6 +367,40 @@ ErrorCodes move(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args)
 {
 	if (args.size() != 3) {
 		return EC_SyntaxCmd;
+	}
+
+	if (args.size() != 3) {
+		return EC_SyntaxCmd;
+	}
+
+	TArgsVec sourcePath;
+	split(args[1], NODES_DELIMITER, sourcePath);
+
+	FSNode *sourceNode = getNode(emul, *currentDir, sourcePath);
+	if (sourceNode == nullptr) {
+		return EC_PathNotExist;
+	}
+	if (IsParent(sourceNode, *currentDir)) {
+		return EC_RemoveCurrentDir;
+	}
+	if (sourceNode == *currentDir) {
+		return EC_RemoveCurrentDir;
+	}
+
+	TArgsVec destPath;
+	split(args[2], NODES_DELIMITER, destPath);
+
+	FSNode *destNode = getNode(emul, *currentDir, destPath);
+	if (destNode == nullptr) {
+		return EC_PathNotExist;
+	}
+
+	ResultStatus status = emul.MoveNode(sourceNode, destNode);
+	if (status == RS_HasHLink) {
+		return EC_HasHardLink;
+	}
+	else if (status != RS_NoError) {
+		return EC_Argument;
 	}
 
 	return EC_NoError;
