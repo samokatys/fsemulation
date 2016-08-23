@@ -11,6 +11,18 @@ FSEmulator::~FSEmulator()
 {
 }
 
+bool FSEmulator::IsRoot(FSNode **root, const std::string &name)
+{
+	*root = nullptr;
+	for (FSNode *node : m_roots) {
+		if (node->m_name == name) {
+			*root = node;
+			break;
+		}
+	}
+	return *root != nullptr;
+}
+
 ResultStatus FSEmulator::CreateRoot(FSNode **root, const std::string &name)
 {
 	if (name.empty()) {

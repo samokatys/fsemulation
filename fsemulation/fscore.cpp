@@ -110,10 +110,10 @@ bool IsParent(const FSNode *parent, const FSNode *child)
 	return pnode == parent;
 }
 
-const FSNode *GetChild(const FSNode *parent, const std::string &name)
+FSNode *GetChild(FSNode *parent, const std::string &name)
 {
-	const FSNode *child = nullptr;
-	for (const FSNode *node : parent->Childs()) {
+	FSNode *child = nullptr;
+	for (FSNode *node : parent->Childs()) {
 		if (node->Name() == name) {
 			child = node;
 			break;

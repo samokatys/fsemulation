@@ -18,6 +18,8 @@ public:
 	FSEmulator();
 	virtual ~FSEmulator();
 
+	bool IsRoot(FSNode **root, const std::string &name);
+
 	ResultStatus CreateRoot(FSNode **root, const std::string &name);
 	ResultStatus RemoveRoot(FSNode *root);
 

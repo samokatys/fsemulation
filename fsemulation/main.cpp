@@ -20,8 +20,9 @@ const std::string MAKE_DYNAMIC_LINK_CMD("mdl");
 const std::string DELETE_CMD("del");
 const std::string COPY_CMD("copy");
 const std::string MOVE_CMD("move");
+const std::string PRINT_CMD("print");
 
-typedef ErrorCodes(*CommandFunc)(const TArgsVec &);
+typedef ErrorCodes(*CommandFunc)(FSEmulator &emul, FSNode **currentDir, const TArgsVec &);
 
 std::vector<std::pair<std::string, CommandFunc> > cmdVec =
 {
@@ -35,15 +36,25 @@ std::vector<std::pair<std::string, CommandFunc> > cmdVec =
 	{ MAKE_DYNAMIC_LINK_CMD, makeDynamicLink },
 	{ DELETE_CMD, deleteFile },
 	{ COPY_CMD, copy },
-	{ MOVE_CMD, move }
+	{ MOVE_CMD, move },
+	{ PRINT_CMD, printDir }
 };
 
 void printError(ErrorCodes err);
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	FSEmulator emulator;
+	FSNode *currentDir;
 	std::string input;
 	std::vector<std::string> tokens;
+
+	ResultStatus status = emulator.CreateRoot(&currentDir, "C:");
+	if (status != RS_NoError) {
+		std::cout << "ERROR: cannot create root 0x" << std::hex << status << std::endl;
+		return status;
+	}
+
 	while (true) {
 		std::cout << "Input command: ";
 		std::getline(std::cin, input);
@@ -57,7 +68,7 @@ int _tmain(int argc, _TCHAR* argv[])
 			if (it != cmdVec.end()) {
 				if( it->second == nullptr) { break; }
 
-				ErrorCodes err = it->second(tokens);
+				ErrorCodes err = it->second(emulator, &currentDir, tokens);
 				if (err != EC_NoError) {
 					printError(err);
 				}

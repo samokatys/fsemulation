@@ -91,4 +91,4 @@ const FSNode *Root(const FSNode *node);
 std::string Path(const FSNode *node);
 
 bool IsParent(const FSNode *parent, const FSNode *child);
-const FSNode *GetChild(const FSNode *parent, const std::string &name);
+FSNode *GetChild(FSNode *parent, const std::string &name);
