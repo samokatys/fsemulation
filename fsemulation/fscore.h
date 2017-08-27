@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 
+class FSNode;
 typedef std::vector<FSNode *> TFSNodeVec;
 
 class FSNode 
