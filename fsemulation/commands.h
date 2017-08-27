@@ -3,31 +3,48 @@
 #include <vector>
 #include <string>
 
+#include "fsemulator.h"
+
 enum ErrorCodes {
 	EC_NoError,
 
-	EC_SyntaxCmd
+	EC_SyntaxCmd,
+	EC_Argument,
+	EC_CurrentDirEmpty,
+	EC_RemoveCurrentDir,
+	EC_RemoveRoot,
+	EC_DirNotEmpty,
+	EC_PathNotExist,
+
+	EC_NotFile,
+	EC_NotDirectory,
+	EC_HasHardLink,
+
+	EC_FileExist,
+	EC_DirectoryExist,
 };
 
 typedef std::vector<std::string> TArgsVec;
 
 // 1 - command name, 2 - path
-ErrorCodes makeDir(const TArgsVec &args);
+ErrorCodes makeDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
 // 1 - command name, 2 - path
-ErrorCodes changeDir(const TArgsVec &args);
+ErrorCodes changeDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
 // 1 - command name, 2 - path
-ErrorCodes removeDir(const TArgsVec &args);
+ErrorCodes removeDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
 // 1 - command name, 2 - path
-ErrorCodes deleteTree(const TArgsVec &args);
+ErrorCodes deleteTree(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
 // 1 - command name, 2 - path
-ErrorCodes makeFile(const TArgsVec &args);
+ErrorCodes makeFile(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
 // 1 - command name, 2 - src, 3 - dest
-ErrorCodes makeHardLink(const TArgsVec &args);
+ErrorCodes makeHardLink(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
 // 1 - command name, 2 - src, 3 - dest
-ErrorCodes makeDynamicLink(const TArgsVec &args);
+ErrorCodes makeDynamicLink(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
 // 1 - command name, 2 - path
-ErrorCodes deleteFile(const TArgsVec &args);
+ErrorCodes deleteFile(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
 // 1 - command name, 2 - src, 3 - dest
-ErrorCodes copy(const TArgsVec &args);
+ErrorCodes copy(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
 // 1 - command name, 2 - src, 3 - dest
-ErrorCodes move(const TArgsVec &args);
+ErrorCodes move(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
+// not need args
+ErrorCodes printDir(FSEmulator &emul, FSNode **currentDir, const TArgsVec &args);
